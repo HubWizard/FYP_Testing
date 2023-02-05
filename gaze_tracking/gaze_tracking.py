@@ -82,7 +82,7 @@ class GazeTracking(object):
         the center is 0.5 and the extreme left is 1.0
         """
         if self.pupils_located:
-            pupil_left = self.eye_left.pupil.x / (self.eye_left.center[0] * 4)
+            pupil_left = self.eye_left.pupil.x / (self.eye_left.center[0] * 2 - 10)
             pupil_right = self.eye_right.pupil.x / (self.eye_right.center[0] * 2 - 10)
             return (pupil_left + pupil_right) / 2
 
@@ -99,35 +99,49 @@ class GazeTracking(object):
     def is_right(self):
         """Returns true if the user is looking to the right"""
         if self.pupils_located:
-            return self.horizontal_ratio() <= 0.40
+            return self.horizontal_ratio() <= 0.52
 
     def is_left(self):
         """Returns true if the user is looking to the left"""
         if self.pupils_located:
-            return self.horizontal_ratio() >= 0.55
+            return self.horizontal_ratio() >= 0.70
+    def is_top(self):
+        """Returns true if the user is looking to the Top"""
+        if self.pupils_located:
+            return self.vertical_ratio() <= 0.9
+    def is_bottom(self):
+        """Returns true if the user is looking to the bottom"""
+        if self.pupils_located:
+            return self.vertical_ratio() >= 1.35
 
     def is_center(self):
         """Returns true if the user is looking to the center"""
         if self.pupils_located:
             return self.is_right() is not True and self.is_left() is not True
+        
+        #self.horizontal_ratio()<0.65 and self.horizontal_ratio()>0.45
 
     def is_blinking(self):
         """Returns true if the user closes his eyes"""
         if self.pupils_located:
             blinking_ratio = (self.eye_left.blinking + self.eye_right.blinking) / 2
-            return blinking_ratio > 3.8
+            return blinking_ratio > 8
 
     def annotated_frame(self):
         """Returns the main frame with pupils highlighted"""
         frame = self.frame.copy()
 
         if self.pupils_located:
-            color = (0, 255, 0)
+            color = (0, 0, 255)
             x_left, y_left = self.pupil_left_coords()
             x_right, y_right = self.pupil_right_coords()
-            cv2.line(frame, (x_left - 5, y_left), (x_left + 5, y_left), color)
-            cv2.line(frame, (x_left, y_left - 5), (x_left, y_left + 5), color)
-            cv2.line(frame, (x_right - 5, y_right), (x_right + 5, y_right), color)
-            cv2.line(frame, (x_right, y_right - 5), (x_right, y_right + 5), color)
+            cv2.line(frame, (x_left - 5, y_left-3), (x_left + 5, y_left-3), color)
+            cv2.line(frame, (x_left - 5, y_left+3), (x_left + 5, y_left+3), color)
+            cv2.line(frame, (x_left+3, y_left - 5), (x_left+3, y_left + 5), color)
+            cv2.line(frame, (x_left-3, y_left - 5), (x_left-3, y_left + 5), color)
+            cv2.line(frame, (x_right - 5, y_right+3), (x_right + 5, y_right+3), color)
+            cv2.line(frame, (x_right - 5, y_right-3), (x_right + 5, y_right-3), color)
+            cv2.line(frame, (x_right+3, y_right - 5), (x_right+3, y_right + 5), color)
+            cv2.line(frame, (x_right-3, y_right - 5), (x_right-3, y_right + 5), color)
 
         return frame
